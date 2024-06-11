@@ -1,10 +1,11 @@
 import librosa
 import re
+from pathlib import Path
 
 
 def extract_text(file_path):
     pattern = r'[^_]+(?=\.[^.]*$)'
-    match = re.search(pattern, file_path)
+    match = re.search(pattern, str(file_path))
     if match:
         return match.group()
     return 'Track'
@@ -27,11 +28,11 @@ def build_rpp(name, wav_list, out_path):
         tn = extract_text(wav_path)
         if tn == 'StereoMix':
             track_name = f'{tn}\n\t\tISBUS 1 1'
-        elif idx == len(wav_list)-1:
+        elif idx == len(wav_list) - 1:
             track_name = f'{tn}\n\t\tISBUS 2 -1'
         else:
             track_name = f'{tn}\n\t\tISBUS 0 0'
-        duration = librosa.get_duration(path=wav_path)
+        duration = librosa.get_duration(path=str(wav_path))
         item = build_item(wav_path, 0, duration, 0, tn)
         tracks.append(f"\n\t<TRACK\n\t\tNAME {track_name}{item}\n\t>")
 
@@ -45,5 +46,5 @@ def build_rpp(name, wav_list, out_path):
 
     r = f"{start}{end}"
 
-    with open(f"{out_path}/{name}.rpp", 'w') as f:  # write the rpp to disk
+    with open(out_path / f"{name}.rpp", 'w') as f:  # write the rpp to disk
         f.write(r)
