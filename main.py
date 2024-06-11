@@ -7,8 +7,16 @@ from pathlib import Path
 
 
 def extract_directory(file_path):
-    path = Path(file_path).parent
-    return str(path)
+    return file_path.parent
+
+
+def make_directory_move_file(filepath):
+    path = filepath.parent
+    new_directory = path / filepath.stem
+    new_directory.mkdir(parents=True, exist_ok=True)
+    new_filepath = new_directory / f'{filepath.stem}.wav'
+    shutil.move(filepath, new_filepath)
+    return new_filepath
 
 
 def explode_polywav(wav_path):
@@ -45,35 +53,35 @@ def explode_polywav(wav_path):
     wav_list = []
     # Export the left and right channels as separate mono WAV files
     if has_audio(stereo_out):
-        stereo_out.export(f'{wav_path.stem}_StereoMix.wav', format="wav")
-        wav_list.append(f'{wav_path.stem}_StereoMix.wav')
+        stereo_out.export(f'{wav_path.parent / wav_path.stem}_StereoMix.wav', format="wav")
+        wav_list.append(wav_path.with_name(f'{wav_path.stem}_StereoMix.wav'))
     if has_audio(mic_1):
-        mic_1.export(f'{wav_path.stem}_Mic1.wav', format="wav")
-        wav_list.append(f'{wav_path.stem}_Mic1.wav')
+        mic_1.export(f'{wav_path.parent / wav_path.stem}_Mic1.wav', format="wav")
+        wav_list.append(wav_path.with_name(f'{wav_path.stem}_Mic1.wav'))
     if has_audio(mic_2):
-        mic_2.export(f'{wav_path.stem}_Mic2.wav', format="wav")
-        wav_list.append(f'{wav_path.stem}_Mic2.wav')
+        mic_2.export(f'{wav_path.parent / wav_path.stem}_Mic2.wav', format="wav")
+        wav_list.append(wav_path.with_name(f'{wav_path.stem}_Mic2.wav'))
     if has_audio(mic_3):
-        mic_3.export(f'{wav_path.stem}_Mic3.wav', format="wav")
-        wav_list.append(f'{wav_path.stem}_Mic3.wav')
+        mic_3.export(f'{wav_path.parent / wav_path.stem}_Mic3.wav', format="wav")
+        wav_list.append(wav_path.with_name(f'{wav_path.stem}_Mic3.wav'))
     if has_audio(mic_4):
-        mic_4.export(f'{wav_path.stem}_Mic4.wav', format="wav")
-        wav_list.append(f'{wav_path.stem}_Mic4.wav')
+        mic_4.export(f'{wav_path.parent / wav_path.stem}_Mic4.wav', format="wav")
+        wav_list.append(wav_path.with_name(f'{wav_path.stem}_Mic4.wav'))
     if has_audio(usb_stereo):
-        usb_stereo.export(f'{wav_path.stem}_USB.wav', format="wav")
-        wav_list.append(f'{wav_path.stem}_USB.wav')
+        usb_stereo.export(f'{wav_path.parent / wav_path.stem}_USB.wav', format="wav")
+        wav_list.append(wav_path.with_name(f'{wav_path.stem}_USB.wav'))
     if has_audio(line_stereo):
-        line_stereo.export(f'{wav_path.stem}_AUX.wav', format="wav")
-        wav_list.append(f'{wav_path.stem}_AUX.wav')
+        line_stereo.export(f'{wav_path.parent / wav_path.stem}_AUX.wav', format="wav")
+        wav_list.append(wav_path.with_name(f'{wav_path.stem}_AUX.wav'))
     if has_audio(bluetooth_stereo):
-        bluetooth_stereo.export(f'{wav_path.stem}_Bluetooth.wav', format="wav")
-        wav_list.append(f'{wav_path.stem}_Bluetooth.wav')
+        bluetooth_stereo.export(f'{wav_path.parent / wav_path.stem}_Bluetooth.wav', format="wav")
+        wav_list.append(wav_path.with_name(f'{wav_path.stem}_Bluetooth.wav'))
     if has_audio(sfx_stereo):
-        sfx_stereo.export(f'{wav_path.stem}_SFX.wav', format="wav")
-        wav_list.append(f'{wav_path.stem}_SFX.wav')
+        sfx_stereo.export(f'{wav_path.parent / wav_path.stem}_SFX.wav', format="wav")
+        wav_list.append(wav_path.with_name(f'{wav_path.stem}_SFX.wav'))
 
     name = wav_path.stem
-    build_rpp(name, wav_list, extract_directory(str(wav_path)))
+    build_rpp(name, wav_list, extract_directory(wav_path))
 
 
 def combine_mono_to_stereo(left_audio, right_audio):
@@ -91,15 +99,6 @@ def combine_mono_to_stereo(left_audio, right_audio):
 def has_audio(audio_segment, silence_thresh=-50.0, min_silence_len=1000):
     nonsilent_ranges = detect_nonsilent(audio_segment, min_silence_len=min_silence_len, silence_thresh=silence_thresh)
     return len(nonsilent_ranges) > 0
-
-
-def make_directory_move_file(filepath):
-    path = Path(filepath)
-    new_directory = path.parent / path.stem
-    new_directory.mkdir(parents=True, exist_ok=True)
-    new_filepath = new_directory / f'{path.stem}.wav'
-    shutil.move(filepath, new_filepath)
-    return new_filepath
 
 
 def main():
