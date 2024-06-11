@@ -3,16 +3,12 @@ from pydub import AudioSegment
 from pydub.silence import detect_nonsilent
 from reapertools import build_rpp
 import re
-import os
+from pathlib import Path
 
 
 def extract_directory(file_path):
-    pattern = r'.*/'
-    match = re.search(pattern, file_path)
-    if match:
-        directory_path = match.group()
-        return directory_path.rstrip('/')
-    return None
+    path = Path(file_path).parent
+    return str(path)
 
 
 def explode_polywav(wav_path):
@@ -49,35 +45,35 @@ def explode_polywav(wav_path):
     wav_list = []
     # Export the left and right channels as separate mono WAV files
     if has_audio(stereo_out):
-        stereo_out.export(f'{wav_path[:-4]}_StereoMix.wav', format="wav")
-        wav_list.append(f'{wav_path[:-4]}_StereoMix.wav')
+        stereo_out.export(f'{wav_path.stem}_StereoMix.wav', format="wav")
+        wav_list.append(f'{wav_path.stem}_StereoMix.wav')
     if has_audio(mic_1):
-        mic_1.export(f'{wav_path[:-4]}_Mic1.wav', format="wav")
-        wav_list.append(f'{wav_path[:-4]}_Mic1.wav')
+        mic_1.export(f'{wav_path.stem}_Mic1.wav', format="wav")
+        wav_list.append(f'{wav_path.stem}_Mic1.wav')
     if has_audio(mic_2):
-        mic_2.export(f'{wav_path[:-4]}_Mic2.wav', format="wav")
-        wav_list.append(f'{wav_path[:-4]}_Mic2.wav')
+        mic_2.export(f'{wav_path.stem}_Mic2.wav', format="wav")
+        wav_list.append(f'{wav_path.stem}_Mic2.wav')
     if has_audio(mic_3):
-        mic_3.export(f'{wav_path[:-4]}_Mic3.wav', format="wav")
-        wav_list.append(f'{wav_path[:-4]}_Mic3.wav')
+        mic_3.export(f'{wav_path.stem}_Mic3.wav', format="wav")
+        wav_list.append(f'{wav_path.stem}_Mic3.wav')
     if has_audio(mic_4):
-        mic_4.export(f'{wav_path[:-4]}_Mic4.wav', format="wav")
-        wav_list.append(f'{wav_path[:-4]}_Mic4.wav')
+        mic_4.export(f'{wav_path.stem}_Mic4.wav', format="wav")
+        wav_list.append(f'{wav_path.stem}_Mic4.wav')
     if has_audio(usb_stereo):
-        usb_stereo.export(f'{wav_path[:-4]}_USB.wav', format="wav")
-        wav_list.append(f'{wav_path[:-4]}_USB.wav')
+        usb_stereo.export(f'{wav_path.stem}_USB.wav', format="wav")
+        wav_list.append(f'{wav_path.stem}_USB.wav')
     if has_audio(line_stereo):
-        line_stereo.export(f'{wav_path[:-4]}_AUX.wav', format="wav")
-        wav_list.append(f'{wav_path[:-4]}_AUX.wav')
+        line_stereo.export(f'{wav_path.stem}_AUX.wav', format="wav")
+        wav_list.append(f'{wav_path.stem}_AUX.wav')
     if has_audio(bluetooth_stereo):
-        bluetooth_stereo.export(f'{wav_path[:-4]}_Bluetooth.wav', format="wav")
-        wav_list.append(f'{wav_path[:-4]}_Bluetooth.wav')
+        bluetooth_stereo.export(f'{wav_path.stem}_Bluetooth.wav', format="wav")
+        wav_list.append(f'{wav_path.stem}_Bluetooth.wav')
     if has_audio(sfx_stereo):
-        sfx_stereo.export(f'{wav_path[:-4]}_SFX.wav', format="wav")
-        wav_list.append(f'{wav_path[:-4]}_SFX.wav')
+        sfx_stereo.export(f'{wav_path.stem}_SFX.wav', format="wav")
+        wav_list.append(f'{wav_path.stem}_SFX.wav')
 
-    name = re.search(r'[^/]+(?=\.[^.]*$)', wav_path).group()
-    build_rpp(name, wav_list, extract_directory(wav_path))
+    name = wav_path.stem
+    build_rpp(name, wav_list, extract_directory(str(wav_path)))
 
 
 def combine_mono_to_stereo(left_audio, right_audio):
@@ -98,15 +94,16 @@ def has_audio(audio_segment, silence_thresh=-50.0, min_silence_len=1000):
 
 
 def make_directory_move_file(filepath):
-    path = extract_directory(filepath)
-    name = re.search(r'[^/]+(?=\.[^.]*$)', filepath).group()
-    os.makedirs(f'{path}/{name}', exist_ok=True)
-    shutil.move(filepath, f'{path}/{name}/{name}.wav')
-    return f'{path}/{name}/{name}.wav'
+    path = Path(filepath)
+    new_directory = path.parent / path.stem
+    new_directory.mkdir(parents=True, exist_ok=True)
+    new_filepath = new_directory / f'{path.stem}.wav'
+    shutil.move(filepath, new_filepath)
+    return new_filepath
 
 
 def main():
-    explode_polywav(input('Paste the file path to your MixCast polywav: '))
+    explode_polywav(Path(input('Paste the file path to your MixCast polywav: ')))
 
 
 if __name__ == "__main__":
